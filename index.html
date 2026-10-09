@@ -364,8 +364,24 @@
         display: flex;
         flex-direction: column;
         transition: transform 0.3s;
+        position: relative;
       }
       .photo-card:hover { transform: translateY(-4px); border-color: var(--orange); }
+
+      .serial-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(9, 5, 20, 0.85);
+        color: var(--orange);
+        border: 1px solid var(--orange);
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.4rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 5;
+        font-family: monospace;
+      }
 
       .photo-card__media { height: 200px; background: #000; cursor: zoom-in; }
       .photo-card__media img, .photo-card__media video { width: 100%; height: 100%; object-fit: cover; }
@@ -441,6 +457,16 @@
         padding: 0.75rem 1rem;
         border-radius: 0.75rem;
         margin-bottom: 0.75rem;
+      }
+      .admin-serial-tag {
+        background: var(--orange);
+        color: #090514;
+        padding: 0.1rem 0.4rem;
+        border-radius: 0.3rem;
+        font-size: 0.75rem;
+        font-family: monospace;
+        font-weight: 700;
+        margin-right: 0.5rem;
       }
       .btn-delete {
         background: rgba(239, 68, 68, 0.2);
@@ -727,7 +753,6 @@
             reader.onload = async (ev) => {
               let resultUrl = ev.target.result;
               
-              // Kompresja obrazu, aby uniknąć błędów rozmiaru w bazie
               if (file.type.startsWith('image')) {
                 const img = new Image();
                 img.src = resultUrl;
@@ -861,8 +886,8 @@
         lightboxClose.addEventListener('click', () => lightbox.close());
         lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.close(); });
 
-        // ODBIERANIE ZDJĘĆ REALTIME
-        db.collection('photos').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        // ODBIERANIE ZDJĘĆ REALTIME Z NUMERACJĄ
+        db.collection('photos').orderBy('createdAt', 'asc').onSnapshot(snapshot => {
           const grid = document.getElementById('gallery-grid');
           const adminList = document.getElementById('admin-media-list');
           grid.innerHTML = '';
@@ -871,9 +896,11 @@
           document.getElementById('photo-count').textContent = `${snapshot.docs.length} plików`;
           document.getElementById('gallery-empty').style.display = snapshot.docs.length ? 'none' : 'block';
 
+          let index = 1;
           snapshot.docs.forEach(doc => {
             const data = doc.data();
             const id = doc.id;
+            const serialNum = `#${index}`;
 
             const card = document.createElement('div');
             card.className = 'photo-card';
@@ -882,10 +909,10 @@
             mediaContainer.className = 'photo-card__media';
 
             if (data.type === 'video') {
-              mediaContainer.innerHTML = `<video src="${data.url}" controls></video>`;
+              mediaContainer.innerHTML = `<span class="serial-badge">${serialNum}</span><video src="${data.url}" controls></video>`;
             } else {
-              mediaContainer.innerHTML = `<img src="${data.url}" alt="${data.caption}">`;
-              mediaContainer.addEventListener('click', () => openLightbox(data.url, `${data.caption} — Autor: ${data.author}`));
+              mediaContainer.innerHTML = `<span class="serial-badge">${serialNum}</span><img src="${data.url}" alt="${data.caption}">`;
+              mediaContainer.addEventListener('click', () => openLightbox(data.url, `${serialNum} - ${data.caption} — Autor: ${data.author}`));
             }
 
             card.appendChild(mediaContainer);
@@ -895,7 +922,7 @@
                 <span>Autor: ${data.author}</span>
               </div>
               <div class="photo-card__actions">
-                <a href="${data.url}" download="halloween-file" class="download-btn">⬇️ Pobierz plik</a>
+                <a href="${data.url}" download="halloween-${index}" class="download-btn">⬇️ Pobierz plik</a>
               </div>
             `;
             grid.appendChild(card);
@@ -904,12 +931,15 @@
             adminItem.className = 'admin-item';
             adminItem.innerHTML = `
               <div>
+                <span class="admin-serial-tag">${serialNum}</span>
                 <strong style="color:#fff;">${data.caption}</strong>
-                <span style="color: var(--text-muted); font-size:0.85rem; display:block;">Autor: ${data.author}</span>
+                <span style="color: var(--text-muted); font-size:0.85rem; display:block; margin-top:0.2rem;">Autor: ${data.author}</span>
               </div>
               <button class="btn-delete" onclick="deletePhoto('${id}')">Usuń</button>
             `;
             adminList.appendChild(adminItem);
+
+            index++;
           });
         });
 
