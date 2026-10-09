@@ -1,713 +1,693 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Szkolna Impreza Haloweenowa 🎃</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Halloween Party</title>
+    <link rel="preconnect" href="https://open.spotify.com" />
+    <link rel="preconnect" href="https://www.youtube.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        spooky: {
-                            orange: '#FF5500',
-                            purple: '#6B21A8',
-                            darkPurple: '#2E1065',
-                            green: '#22C55E',
-                            dark: '#0B0813',
-                            card: '#161127'
-                        }
-                    },
-                    fontFamily: {
-                        creepster: ['Creepster', 'cursive'],
-                        sans: ['Plus Jakarta Sans', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
+
     <style>
-        body {
-            background-color: #0B0813;
-            color: #F3F4F6;
-            background-image: 
-                radial-gradient(circle at 20% 20%, rgba(107, 33, 168, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(255, 85, 0, 0.15) 0%, transparent 40%);
-            background-attachment: fixed;
-        }
-        .glow-orange {
-            box-shadow: 0 0 20px rgba(255, 85, 0, 0.35);
-        }
-        .glow-purple {
-            box-shadow: 0 0 20px rgba(107, 33, 168, 0.35);
-        }
-        .text-glow {
-            text-shadow: 0 0 10px rgba(255, 85, 0, 0.5);
-        }
-        .spider-web {
-            background-image: radial-gradient(circle at center, transparent 0%, transparent 70%, rgba(255,255,255,0.03) 71%);
-            background-size: 30px 30px;
-        }
+      :root {
+        --bg-dark: #090514;
+        --bg-panel: #140c26;
+        --orange: #ff6600;
+        --orange-glow: rgba(255, 102, 0, 0.4);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139, 92, 246, 0.3);
+        --text-main: #f3f4f6;
+        --text-muted: #9ca3af;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      h1, h2, h3, .eyebrow {
+        font-family: 'Creepster', cursive, sans-serif;
+        letter-spacing: 0.05em;
+      }
+
+      #party-canvas {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .app-shell {
+        position: relative;
+        z-index: 10;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem 4rem 1rem;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        background: linear-gradient(180deg, rgba(20, 12, 38, 0.85) 0%, rgba(13, 8, 25, 0.95) 100%);
+        border: 2px solid rgba(139, 92, 246, 0.3);
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 25px var(--purple-glow);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero__content .eyebrow {
+        color: var(--orange);
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 0 10px var(--orange-glow);
+      }
+
+      .hero__content h1 {
+        font-size: 3.5rem;
+        color: #fff;
+        margin: 0 0 1rem 0;
+        text-shadow: 0 0 20px var(--purple);
+      }
+
+      .hero__copy {
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+        font-size: 1.05rem;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+        background: rgba(20, 12, 38, 0.9);
+        padding: 0.5rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+      }
+
+      .tab {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 0.85rem 1rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .tab:hover { color: #fff; background: rgba(139, 92, 246, 0.15); }
+      .tab.is-active {
+        background: var(--purple);
+        color: #fff;
+        box-shadow: 0 0 15px var(--purple-glow);
+      }
+
+      .panel {
+        display: none;
+        background: var(--bg-panel);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      }
+
+      .panel.is-active {
+        display: block;
+        animation: fadeIn 0.4s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 1rem;
+      }
+
+      .section-heading h2 { margin: 0; font-size: 2rem; color: #fff; }
+      .section-heading .eyebrow { color: var(--orange); margin: 0 0 0.25rem 0; font-size: 1.1rem; }
+
+      .upload-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      @media(max-width: 640px) {
+        .upload-options { grid-template-columns: 1fr; }
+        .hero__content h1 { font-size: 2.5rem; }
+      }
+
+      .action-card {
+        border: 2px dashed rgba(139, 92, 246, 0.5);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        background: rgba(9, 5, 20, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .action-card:hover {
+        border-color: var(--orange);
+        background: rgba(255, 102, 0, 0.05);
+      }
+
+      .action-card input[type="file"] { display: none; }
+      .action-card__icon { font-size: 2rem; color: var(--orange); margin-bottom: 0.5rem; }
+      .action-card__title { font-size: 1.1rem; font-weight: 600; color: #fff; }
+      .action-card__hint { font-size: 0.85rem; color: var(--text-muted); }
+
+      form { display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 2rem; }
+      .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      @media(max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+
+      label { display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+      input[type="text"], input[type="url"], input[type="password"] {
+        background: rgba(9, 5, 20, 0.8);
+        border: 1px solid rgba(139, 92, 246, 0.4);
+        border-radius: 0.75rem;
+        padding: 0.85rem 1rem;
+        color: #fff;
+        font-size: 1rem;
+        outline: none;
+      }
+      input:focus { border-color: var(--orange); box-shadow: 0 0 10px var(--orange-glow); }
+
+      .primary-action {
+        background: linear-gradient(135deg, var(--orange), #ea580c);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        padding: 0.85rem 1.25rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 15px var(--orange-glow);
+        transition: transform 0.2s;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      .primary-action:hover { transform: translateY(-2px); }
+
+      /* MODAL APARATU */
+      .camera-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(9, 5, 20, 0.95);
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        border: none;
+        width: 100vw;
+        height: 100vh;
+      }
+      .camera-modal:not([open]) { display: none; }
+
+      .camera-box {
+        background: var(--bg-panel);
+        border: 1px solid var(--purple);
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        max-width: 500px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      }
+
+      .camera-viewport {
+        width: 100%;
+        height: 300px;
+        background: #000;
+        border-radius: 1rem;
+        border: 1px solid rgba(139, 92, 246, 0.4);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .camera-viewport video, .camera-viewport img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .camera-controls {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      /* GALERIA I KARTY */
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .photo-card {
+        background: rgba(9, 5, 20, 0.7);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        border-radius: 1rem;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s;
+      }
+      .photo-card:hover { transform: translateY(-4px); border-color: var(--orange); }
+
+      .photo-card__media { height: 200px; background: #000; }
+      .photo-card__media img, .photo-card__media video { width: 100%; height: 100%; object-fit: cover; }
+      .photo-card__meta { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
+      .photo-card__meta strong { color: #fff; font-size: 1rem; }
+      .photo-card__meta span { color: var(--text-muted); font-size: 0.85rem; }
+      .photo-card__actions { padding: 0.75rem 1rem; background: rgba(20, 12, 38, 0.5); border-top: 1px solid rgba(255, 255, 255, 0.05); }
+
+      .download-btn {
+        color: var(--orange);
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+      }
+      .download-btn:hover { text-decoration: underline; }
+
+      .song-list { display: flex; flex-direction: column; gap: 1rem; }
+      .song-card {
+        background: rgba(9, 5, 20, 0.7);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .song-card iframe { width: 100%; height: 152px; border-radius: 0.75rem; border: none; }
+
+      .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
     </style>
-</head>
-<body class="min-h-screen font-sans pb-12 flex flex-col justify-between">
+  </head>
+  <body>
+    <canvas id="party-canvas"></canvas>
 
-    <div>
-        <!-- Header / Banner -->
-        <header class="border-b border-purple-900/40 bg-spooky-dark/80 backdrop-blur-md sticky top-0 z-30">
-            <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center space-x-3">
-                    <span class="text-4xl animate-bounce">🎃</span>
-                    <div>
-                        <h1 class="text-2xl md:text-3xl font-creepster text-spooky-orange tracking-wider text-glow">
-                            Szkolny Halloween 2026
-                        </h1>
-                        <p class="text-xs text-purple-300">Strasznie dobra zabawa! 👻</p>
-                    </div>
-                </div>
-
-                <!-- Navigation Tabs -->
-                <nav class="flex items-center gap-2 bg-spooky-card p-1.5 rounded-xl border border-purple-900/50 text-sm font-semibold">
-                    <button onclick="switchTab('gallery')" id="tab-gallery" class="px-4 py-2 rounded-lg bg-spooky-orange text-white shadow-md transition-all flex items-center gap-2">
-                        <i class="fas fa-[#]">📷</i> Galeria
-                    </button>
-                    <button onclick="switchTab('music')" id="tab-music" class="px-4 py-2 rounded-lg text-purple-300 hover:text-white hover:bg-purple-900/30 transition-all flex items-center gap-2">
-                        <i class="fas fa-[#]">🎵</i> Playlista
-                    </button>
-                    <button onclick="switchTab('admin')" id="tab-admin" class="px-4 py-2 rounded-lg text-purple-300 hover:text-white hover:bg-purple-900/30 transition-all flex items-center gap-2">
-                        <i class="fas fa-[#]">👑</i> Admin
-                    </button>
-                </nav>
-            </div>
-        </header>
-
-        <!-- Main Content Wrapper -->
-        <main class="max-w-6xl mx-auto px-4 py-8">
-
-            <!-- Countdown Timer Header -->
-            <div class="mb-10 text-center bg-spooky-card/80 border border-purple-800/40 p-6 rounded-2xl relative overflow-hidden shadow-xl">
-                <div class="absolute -right-6 -top-6 text-7xl opacity-10 pointer-events-none">🦇</div>
-                <h2 class="text-lg font-bold text-purple-300 uppercase tracking-widest mb-3">Odliczanie do Wieczoru Grozy</h2>
-                <div class="flex justify-center items-center gap-4 text-center" id="countdown-container">
-                    <div class="bg-spooky-dark/90 p-3 rounded-xl border border-orange-500/30 min-w-[70px]">
-                        <span id="cd-days" class="block text-2xl md:text-3xl font-bold text-spooky-orange">00</span>
-                        <span class="text-[10px] uppercase text-gray-400">Dni</span>
-                    </div>
-                    <span class="text-2xl font-bold text-purple-500">:</span>
-                    <div class="bg-spooky-dark/90 p-3 rounded-xl border border-orange-500/30 min-w-[70px]">
-                        <span id="cd-hours" class="block text-2xl md:text-3xl font-bold text-spooky-orange">00</span>
-                        <span class="text-[10px] uppercase text-gray-400">Godzin</span>
-                    </div>
-                    <span class="text-2xl font-bold text-purple-500">:</span>
-                    <div class="bg-spooky-dark/90 p-3 rounded-xl border border-orange-500/30 min-w-[70px]">
-                        <span id="cd-mins" class="block text-2xl md:text-3xl font-bold text-spooky-orange">00</span>
-                        <span class="text-[10px] uppercase text-gray-400">Minut</span>
-                    </div>
-                    <span class="text-2xl font-bold text-purple-500">:</span>
-                    <div class="bg-spooky-dark/90 p-3 rounded-xl border border-orange-500/30 min-w-[70px]">
-                        <span id="cd-secs" class="block text-2xl md:text-3xl font-bold text-spooky-orange">00</span>
-                        <span class="text-[10px] uppercase text-gray-400">Sekund</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 1: PHOTO GALLERY & UPLOAD/CAMERA -->
-            <section id="sec-gallery" class="space-y-8">
-                
-                <!-- Action Buttons: Upload or Take Snapshot -->
-                <div class="bg-spooky-card border border-purple-800/40 p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold text-spooky-orange mb-4 flex items-center gap-2">
-                        <span>📸</span> Dodaj Zdjęcie do Galerii
-                    </h3>
-
-                    <!-- Choice Bar -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                        <button onclick="showUploadForm()" id="btn-mode-upload" class="p-4 rounded-xl border-2 border-spooky-orange bg-orange-500/10 text-white font-semibold flex items-center justify-center gap-3 transition hover:bg-orange-500/20">
-                            <span class="text-2xl">📁</span>
-                            <div class="text-left">
-                                <div class="text-sm font-bold">Wgraj Plik z Urządzenia</div>
-                                <div class="text-xs text-gray-400">Wybierz gotową fotkę</div>
-                            </div>
-                        </button>
-                        <button onclick="openCameraModal()" class="p-4 rounded-xl border-2 border-purple-500/40 bg-purple-900/20 text-white font-semibold flex items-center justify-center gap-3 transition hover:border-purple-500 hover:bg-purple-900/40">
-                            <span class="text-2xl">📸</span>
-                            <div class="text-left">
-                                <div class="text-sm font-bold">Zrób Zdjęcie Aparatem</div>
-                                <div class="text-xs text-purple-300">Użyj kamerki i strzel fotkę</div>
-                            </div>
-                        </button>
-                    </div>
-
-                    <!-- File Upload Box (Default View) -->
-                    <form id="upload-form" onsubmit="handleFileUpload(event)" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-purple-300 mb-1">Autor / Nick</label>
-                                <input type="text" id="up-author" required placeholder="np. Młody Wampir" class="w-full bg-spooky-dark border border-purple-800/60 rounded-xl p-3 text-white focus:outline-none focus:border-spooky-orange text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-purple-300 mb-1">Krótki Opis / Przebranie</label>
-                                <input type="text" id="up-caption" placeholder="np. Strój Szkieleta 💀" class="w-full bg-spooky-dark border border-purple-800/60 rounded-xl p-3 text-white focus:outline-none focus:border-spooky-orange text-sm">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-purple-300 mb-1">Wybierz plik graficzny</label>
-                            <input type="file" id="up-file" accept="image/*" required class="w-full text-sm text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-spooky-orange file:text-white hover:file:opacity-90 cursor-pointer bg-spooky-dark border border-purple-800/60 rounded-xl p-1">
-                        </div>
-
-                        <button type="submit" id="up-submit-btn" class="w-full py-3 bg-spooky-orange hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-                            <span>🚀</span> Opublikuj w Galerii
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Photos Grid Section -->
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-bold text-purple-300 flex items-center gap-2">
-                            <span>🖼️</span> Galeria Na Żywo <span id="photo-count" class="text-xs bg-purple-900/60 px-2 py-0.5 rounded-full text-purple-200">0</span>
-                        </h3>
-                    </div>
-
-                    <!-- Photo Feed Grid -->
-                    <div id="photos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Loading State -->
-                        <div class="col-span-full text-center py-12 text-gray-500">
-                            <i class="fas fa-spinner fa-spin text-3xl text-spooky-orange mb-3"></i>
-                            <p class="text-sm">Wczytywanie zdjęć z imprezy...</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 2: PLAYLIST / MUSIC REQUESTS -->
-            <section id="sec-music" class="hidden space-y-6">
-                <div class="bg-spooky-card border border-purple-800/40 p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold text-spooky-orange mb-2 flex items-center gap-2">
-                        <span>🎵</span> Halloweenowa Playlista
-                    </h3>
-                    <p class="text-xs text-purple-300 mb-6">Zgłoś swoją piosenkę na imprezę szkolną!</p>
-
-                    <form onsubmit="handleSongSubmit(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        <div>
-                            <input type="text" id="song-title" required placeholder="Tytuł utwor/wykonawca" class="w-full bg-spooky-dark border border-purple-800/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-spooky-orange">
-                        </div>
-                        <div>
-                            <input type="text" id="song-author" placeholder="Twoje imię/klasa" class="w-full bg-spooky-dark border border-purple-800/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-spooky-orange">
-                        </div>
-                        <button type="submit" class="bg-spooky-purple hover:bg-purple-700 text-white font-bold rounded-xl p-3 text-sm transition">
-                            ➕ Dodaj Nutę
-                        </button>
-                    </form>
-
-                    <div id="songs-list" class="space-y-3">
-                        <p class="text-center text-xs text-gray-500 py-4">Ładowanie propozycji...</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 3: ADMIN MODERATION PANEL -->
-            <section id="sec-admin" class="hidden space-y-6">
-                <div class="bg-spooky-card border border-purple-800/40 p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
-                        <span>🛡️</span> Panel Moderacji (Admin)
-                    </h3>
-                    <p class="text-xs text-gray-400 mb-6">Poniżej możesz usuwać nieodpowiednie zdjęcia lub utwory z bazy danych.</p>
-
-                    <div class="space-y-6">
-                        <div>
-                            <h4 class="text-sm font-bold text-purple-300 mb-3 border-b border-purple-800/40 pb-2">Zarządzaj Zdjęciami</h4>
-                            <div id="admin-photos-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                <p class="text-xs text-gray-500">Wczytywanie...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-    </div>
-
-    <!-- Footer -->
-    <footer class="text-center text-xs text-purple-400/60 py-4 mt-auto border-t border-purple-900/30">
-        <p>🎃 Szkolna Zabawa Halloweenowa 2026 • Wszystkie strachy dozwolone</p>
-    </footer>
-
-    <!-- CAMERA SNAPSHOT MODAL -->
-    <div id="camera-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-spooky-card border border-purple-700/60 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative overflow-hidden">
-            
-            <button onclick="closeCameraModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">
-                ✕
-            </button>
-
-            <h3 class="text-xl font-bold text-spooky-orange mb-1 flex items-center gap-2">
-                <span>📸</span> Zrób Zdjęcie Aparatem
-            </h3>
-            <p class="text-xs text-purple-300 mb-4">Uśmiechnij się strasznie! 😉</p>
-
-            <!-- Live Camera Preview / Canvas Output Container -->
-            <div class="relative bg-black rounded-xl overflow-hidden aspect-video border border-purple-900/80 mb-4 flex items-center justify-center">
-                <video id="webcam-video" autoplay playsinline class="w-full h-full object-cover"></video>
-                <canvas id="snapshot-canvas" class="hidden w-full h-full object-cover"></canvas>
-                <div id="camera-error" class="hidden absolute inset-0 bg-black/90 p-4 flex flex-col items-center justify-center text-center">
-                    <span class="text-3xl mb-2">⚠️</span>
-                    <p class="text-xs text-red-400">Nie udało się uzyskać dostępu do kamery. Upewnij się, że zezwoliłeś/aś przeglądarce na jej użycie.</p>
-                </div>
-            </div>
-
-            <!-- Form Details for Captured Snapshot -->
-            <div id="snap-details" class="space-y-3 mb-4 hidden">
-                <input type="text" id="snap-author" placeholder="Twoje Imię / Nick *" required class="w-full bg-spooky-dark border border-purple-800/60 rounded-xl p-2.5 text-white text-sm focus:outline-none focus:border-spooky-orange">
-                <input type="text" id="snap-caption" placeholder="Krótki opis / kostium" class="w-full bg-spooky-dark border border-purple-800/60 rounded-xl p-2.5 text-white text-sm focus:outline-none focus:border-spooky-orange">
-            </div>
-
-            <!-- Modal Action Controls -->
-            <div class="flex items-center justify-end gap-3">
-                <button onclick="closeCameraModal()" class="px-4 py-2.5 rounded-xl border border-purple-800 text-xs font-bold text-purple-300 hover:bg-purple-900/40">
-                    Anuluj
-                </button>
-                
-                <button id="btn-snap-trigger" onclick="takeSnapshot()" class="px-5 py-2.5 rounded-xl bg-spooky-orange hover:bg-orange-600 text-white text-xs font-bold shadow-lg flex items-center gap-2">
-                    <span>📷</span> Zrób Fotkę
-                </button>
-
-                <button id="btn-snap-retake" onclick="retakePhoto()" class="hidden px-4 py-2.5 rounded-xl bg-purple-900/60 hover:bg-purple-800 text-purple-200 text-xs font-bold flex items-center gap-1">
-                    <span>🔄</span> Zrób ponownie
-                </button>
-
-                <button id="btn-snap-save" onclick="saveSnapshot()" class="hidden px-5 py-2.5 rounded-xl bg-spooky-green hover:bg-green-600 text-white text-xs font-bold shadow-lg flex items-center gap-2">
-                    <span>🚀</span> Wyślij do Galerii
-                </button>
-            </div>
+    <main class="app-shell">
+      <section class="hero">
+        <div class="hero__content">
+          <p class="eyebrow">Galeria Imprezowa</p>
+          <h1>Halloween Party</h1>
+          <p class="hero__copy">Rób zdjęcia na żywo, dodawaj z galerii i zgłaszaj nutki!</p>
         </div>
-    </div>
+      </section>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-4 right-4 z-50 bg-spooky-orange text-white px-5 py-3 rounded-xl shadow-2xl font-semibold text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2">
-        <span id="toast-icon">✨</span>
-        <span id="toast-msg">Pomyślnie zrealizowano!</span>
-    </div>
+      <nav class="tabs">
+        <button class="tab is-active" type="button" data-tab="gallery">📸 Zdjęcia i Filmy</button>
+        <button class="tab" type="button" data-tab="music">🎵 Muzyka</button>
+      </nav>
 
-    <!-- FIREBASE AND CLIENT APPLICATION LOGIC -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+      <!-- GALERIA -->
+      <section class="panel is-active" id="gallery-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Wspólna Galeria</p>
+            <h2>Zdjęcia z Imprezy</h2>
+          </div>
+          <p id="photo-count">0 plików</p>
+        </div>
 
-        // Firebase Setup & Initialization
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'halloween-party-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "demo-api-key",
-            authDomain: "demo.firebaseapp.com",
-            projectId: "demo-project",
-            storageBucket: "demo.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:123456"
-        };
+        <div class="upload-options">
+          <label class="action-card" for="photo-input">
+            <input id="photo-input" type="file" accept="image/*,video/*" multiple />
+            <span class="action-card__icon">📁</span>
+            <span class="action-card__title">Wybierz z Urządzenia</span>
+            <span class="action-card__hint">Dodaj pliki z telefonu lub komputera</span>
+          </label>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+          <div class="action-card" id="open-camera-btn">
+            <span class="action-card__icon">📸</span>
+            <span class="action-card__title">Zrób Zdjęcie Aparatem</span>
+            <span class="action-card__hint">Użyj kamerki i zrób fotkę teraz</span>
+          </div>
+        </div>
 
-        let currentUser = null;
-        let mediaStream = null;
-        let capturedDataUrl = null;
+        <form id="photo-form">
+          <div class="form-row">
+            <label>Twoje Imię / Nick
+              <input id="photo-author" type="text" placeholder="np. Oskar" required />
+            </label>
+            <label>Opis zdjęcia / filmu
+              <input id="photo-caption" type="text" placeholder="np. Walimy wódkę!" />
+            </label>
+          </div>
+          <button class="primary-action" type="submit" id="submit-btn">🚀 Opublikuj Pliki z Urządzenia</button>
+        </form>
 
-        // Firebase Auth Guard Initialization
-        async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Auth error:", err);
-            }
-        }
+        <div class="gallery-grid" id="gallery-grid"></div>
+        <div class="empty-state" id="gallery-empty">Czekamy na pierwsze zdjęcia!</div>
+      </section>
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                setupRealtimeListeners();
-            }
+      <!-- MUZYKA -->
+      <section class="panel" id="music-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Playlista</p>
+            <h2>Propozycje Piosenek</h2>
+          </div>
+          <p id="song-count">0 propozycji</p>
+        </div>
+
+        <form id="music-form">
+          <div class="form-row">
+            <label>Artysta i Tytuł
+              <input id="song-title" type="text" placeholder="np. Żabson - COWABONGA" required />
+            </label>
+            <label>Link (Spotify / YouTube)
+              <input id="song-link" type="url" placeholder="https://open.spotify.com/track/..." />
+            </label>
+          </div>
+          <div class="form-row">
+            <label>Propozycja od
+              <input id="song-author" type="text" placeholder="np. Oskar" />
+            </label>
+            <label>Komentarz
+              <input id="song-note" type="text" placeholder="np. Mocny bas!" />
+            </label>
+          </div>
+          <button class="primary-action" type="submit">➕ Dodaj Utwór do Listy</button>
+        </form>
+
+        <div class="song-list" id="song-list"></div>
+        <div class="empty-state" id="songs-empty">Brak propozycji piosenek. Dodaj pierwszą!</div>
+      </section>
+    </main>
+
+    <!-- MODAL APARATU -->
+    <dialog class="camera-modal" id="camera-modal">
+      <div class="camera-box">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="color: #fff; font-size: 1.3rem; margin: 0;">📸 Zrób Zdjęcie Aparatem</h3>
+          <button id="close-x-btn" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <div class="camera-viewport">
+          <video id="webcam-video" autoplay playsinline></video>
+          <canvas id="webcam-canvas" hidden></canvas>
+          <img id="webcam-preview" hidden alt="Podgląd" />
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <input id="cam-author" type="text" placeholder="Twoje imię / nick" style="background: rgba(9,5,20,0.8); border: 1px solid var(--purple); padding: 0.6rem; border-radius: 0.5rem; color: #fff;" />
+          <input id="cam-caption" type="text" placeholder="Opis zdjęcia" style="background: rgba(9,5,20,0.8); border: 1px solid var(--purple); padding: 0.6rem; border-radius: 0.5rem; color: #fff;" />
+        </div>
+
+        <div class="camera-controls">
+          <button class="primary-action" id="snap-btn" type="button">📸 Zrób Zdjęcie</button>
+          <button class="primary-action" id="retake-btn" type="button" style="display:none; background: #4b5563;">🔄 Ponów</button>
+          <button class="primary-action" id="save-snap-btn" type="button" style="display:none; background: #16a34a;">🚀 Wyślij do Galerii</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Taby
+        const tabs = document.querySelectorAll('.tab');
+        const panels = document.querySelectorAll('.panel');
+
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const target = tab.dataset.tab;
+            tabs.forEach(t => t.classList.remove('is-active'));
+            panels.forEach(p => p.classList.remove('is-active'));
+            tab.classList.add('is-active');
+            document.getElementById(`${target}-panel`).classList.add('is-active');
+          });
         });
 
-        initAuth();
+        // Stan danych (Pamięć lokalna dla stabilności)
+        let photos = JSON.parse(localStorage.getItem('hw_photos')) || [];
+        let songs = JSON.parse(localStorage.getItem('hw_songs')) || [];
 
-        // Collections references following mandatory strict paths
-        function getPhotosRef() {
-            return collection(db, 'artifacts', appId, 'public', 'data', 'photos');
+        function saveData() {
+          try {
+            localStorage.setItem('hw_photos', JSON.stringify(photos));
+            localStorage.setItem('hw_songs', JSON.stringify(songs));
+          } catch(e) {
+            console.warn('Przekroczono limit pamięci przeglądarki');
+          }
+          renderGallery();
+          renderSongs();
         }
 
-        function getSongsRef() {
-            return collection(db, 'artifacts', appId, 'public', 'data', 'songs');
+        // APARAT NA ŻYWO
+        const cameraModal = document.getElementById('camera-modal');
+        const openCameraBtn = document.getElementById('open-camera-btn');
+        const closeXBtn = document.getElementById('close-x-btn');
+        const webcamVideo = document.getElementById('webcam-video');
+        const webcamCanvas = document.getElementById('webcam-canvas');
+        const webcamPreview = document.getElementById('webcam-preview');
+        const snapBtn = document.getElementById('snap-btn');
+        const retakeBtn = document.getElementById('retake-btn');
+        const saveSnapBtn = document.getElementById('save-snap-btn');
+
+        let cameraStream = null;
+        let capturedDataUrl = null;
+
+        openCameraBtn.addEventListener('click', async () => {
+          try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+            webcamVideo.srcObject = cameraStream;
+            webcamVideo.style.display = 'block';
+            webcamPreview.hidden = true;
+            snapBtn.style.display = 'inline-flex';
+            retakeBtn.style.display = 'none';
+            saveSnapBtn.style.display = 'none';
+            cameraModal.showModal();
+          } catch (err) {
+            alert('Nie udało się uzyskać dostępu do aparatu.');
+          }
+        });
+
+        function closeCamera() {
+          if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+          }
+          cameraModal.close();
         }
 
-        // Realtime Data Sync
-        function setupRealtimeListeners() {
-            if (!currentUser) return;
+        closeXBtn.addEventListener('click', closeCamera);
 
-            // Photos Listener
-            onSnapshot(getPhotosRef(), (snapshot) => {
-                const photos = [];
-                snapshot.forEach(docSnap => {
-                    photos.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                
-                // Sort by timestamp descending
-                photos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                
-                renderPhotosGrid(photos);
-                renderAdminPhotos(photos);
-            }, (error) => {
-                console.error("Firestore photos listener error:", error);
-            });
+        snapBtn.addEventListener('click', () => {
+          webcamCanvas.width = webcamVideo.videoWidth || 640;
+          webcamCanvas.height = webcamVideo.videoHeight || 480;
+          const ctx = webcamCanvas.getContext('2d');
+          ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
+          capturedDataUrl = webcamCanvas.toDataURL('image/jpeg', 0.85);
 
-            // Songs Listener
-            onSnapshot(getSongsRef(), (snapshot) => {
-                const songs = [];
-                snapshot.forEach(docSnap => {
-                    songs.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                songs.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
-                renderSongsList(songs);
-            }, (error) => {
-                console.error("Firestore songs listener error:", error);
-            });
-        }
+          webcamPreview.src = capturedDataUrl;
+          webcamPreview.hidden = false;
+          webcamVideo.style.display = 'none';
 
-        // Render Photo Gallery
-        function renderPhotosGrid(photos) {
-            const container = document.getElementById('photos-grid');
-            document.getElementById('photo-count').innerText = photos.length;
+          snapBtn.style.display = 'none';
+          retakeBtn.style.display = 'inline-flex';
+          saveSnapBtn.style.display = 'inline-flex';
+        });
 
-            if (photos.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-12 bg-spooky-card/50 rounded-2xl border border-purple-900/30">
-                        <span class="text-4xl block mb-2">📸</span>
-                        <p class="text-gray-400 text-sm">Brak zdjęć w galerii. Zrób pierwsze zdjęcie lub wgraj z telefonu!</p>
-                    </div>
-                `;
-                return;
-            }
+        retakeBtn.addEventListener('click', () => {
+          capturedDataUrl = null;
+          webcamPreview.hidden = true;
+          webcamVideo.style.display = 'block';
+          snapBtn.style.display = 'inline-flex';
+          retakeBtn.style.display = 'none';
+          saveSnapBtn.style.display = 'none';
+        });
 
-            container.innerHTML = photos.map(photo => `
-                <div class="bg-spooky-card border border-purple-800/40 rounded-2xl overflow-hidden shadow-xl flex flex-col group hover:border-spooky-orange transition duration-300">
-                    <div class="relative aspect-square overflow-hidden bg-spooky-dark">
-                        <img src="${photo.imageUrl}" alt="${photo.caption || 'Zdjęcie Halloween'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy">
-                        ${photo.isCamera ? `<span class="absolute top-3 right-3 bg-spooky-orange/90 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow">📸 Aparat</span>` : ''}
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div>
-                            <p class="font-bold text-white text-sm line-clamp-1">${escapeHtml(photo.caption || 'Halloween 2026')}</p>
-                            <p class="text-xs text-purple-300 mt-1">Dodane przez: <span class="font-semibold text-spooky-orange">${escapeHtml(photo.author || 'Anonim')}</span></p>
-                        </div>
-                        <div class="mt-4 pt-3 border-t border-purple-900/40 flex items-center justify-between text-xs text-gray-400">
-                            <span>${new Date(photo.createdAt || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                            <a href="${photo.imageUrl}" download="halloween-photo-${photo.id}.jpg" class="px-3 py-1.5 bg-purple-900/50 hover:bg-purple-800 text-purple-200 rounded-lg flex items-center gap-1 font-semibold transition">
-                                ⬇️ Pobierz
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
+        saveSnapBtn.addEventListener('click', () => {
+          if (!capturedDataUrl) return;
 
-        // Render Admin Moderation List
-        function renderAdminPhotos(photos) {
-            const container = document.getElementById('admin-photos-list');
-            if (photos.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500">Brak zdjęć do moderacji.</p>`;
-                return;
-            }
+          const author = document.getElementById('cam-author').value.trim() || 'Gość';
+          const caption = document.getElementById('cam-caption').value.trim() || 'Zdjęcie z aparatu';
 
-            container.innerHTML = photos.map(photo => `
-                <div class="flex items-center gap-3 bg-spooky-dark p-2 rounded-xl border border-purple-900/50">
-                    <img src="${photo.imageUrl}" class="w-12 h-12 rounded-lg object-cover">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-white truncate">${escapeHtml(photo.author)}</p>
-                        <p class="text-[10px] text-gray-400 truncate">${escapeHtml(photo.caption || 'Brak opisu')}</p>
-                    </div>
-                    <button onclick="deletePhoto('${photo.id}')" class="px-2.5 py-1.5 bg-red-900/50 hover:bg-red-800 text-red-200 text-xs rounded-lg font-bold">
-                        Usuń
-                    </button>
-                </div>
-            `).join('');
-        }
+          photos.unshift({
+            id: 'p_' + Date.now(),
+            url: capturedDataUrl,
+            author,
+            caption,
+            date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          });
 
-        // Render Songs List
-        function renderSongsList(songs) {
-            const container = document.getElementById('songs-list');
-            if (songs.length === 0) {
-                container.innerHTML = `<p class="text-center text-xs text-gray-500 py-4">Brak propozycji. Bądź pierwszy!</p>`;
-                return;
-            }
+          saveData();
+          document.getElementById('cam-author').value = '';
+          document.getElementById('cam-caption').value = '';
+          capturedDataUrl = null;
+          closeCamera();
+        });
 
-            container.innerHTML = songs.map(song => `
-                <div class="flex items-center justify-between bg-spooky-dark/80 border border-purple-900/40 p-3 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <span class="text-lg">🎵</span>
-                        <div>
-                            <p class="text-sm font-bold text-white">${escapeHtml(song.title)}</p>
-                            <p class="text-xs text-purple-300">Dodane przez: ${escapeHtml(song.author || 'Uczestnik')}</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
+        // WYSYŁANIE Z URZĄDZENIA
+        const photoForm = document.getElementById('photo-form');
+        const photoInput = document.getElementById('photo-input');
 
-        // File Upload Handler (Base64 conversion for instant store without external bucket)
-        window.handleFileUpload = async function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
+        photoForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const author = document.getElementById('photo-author').value.trim() || 'Gość';
+          const caption = document.getElementById('photo-caption').value.trim() || 'Zdjęcie';
+          const files = photoInput.files;
 
-            const author = document.getElementById('up-author').value.trim();
-            const caption = document.getElementById('up-caption').value.trim();
-            const fileInput = document.getElementById('up-file');
+          if (files.length === 0) {
+            alert('Wybierz plik z urządzenia!');
+            return;
+          }
 
-            if (!fileInput.files || fileInput.files.length === 0) return;
-
-            const btn = document.getElementById('up-submit-btn');
-            btn.disabled = true;
-            btn.innerText = 'Przetwarzanie...';
-
-            const file = fileInput.files[0];
+          Array.from(files).forEach(file => {
             const reader = new FileReader();
-
-            reader.onload = async function(event) {
-                try {
-                    await addDoc(getPhotosRef(), {
-                        imageUrl: event.target.result,
-                        author: author,
-                        caption: caption,
-                        isCamera: false,
-                        createdAt: Date.now()
-                    });
-
-                    showToast("Zdjęcie pomyślnie dodane!", "🎉");
-                    document.getElementById('upload-form').reset();
-                } catch (err) {
-                    console.error("Upload save error:", err);
-                    showToast("Błąd podczas zapisywania zdjęcia.", "⚠️");
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = '🚀 Opublikuj w Galerii';
-                }
+            reader.onload = (ev) => {
+              photos.unshift({
+                id: 'p_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                url: ev.target.result,
+                type: file.type.startsWith('video') ? 'video' : 'image',
+                author,
+                caption,
+                date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+              });
+              saveData();
             };
-
             reader.readAsDataURL(file);
-        };
+          });
 
-        // Song Form Submit Handler
-        window.handleSongSubmit = async function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
+          photoInput.value = '';
+          photoForm.reset();
+        });
 
-            const title = document.getElementById('song-title').value.trim();
-            const author = document.getElementById('song-author').value.trim();
+        function renderGallery() {
+          const grid = document.getElementById('gallery-grid');
+          grid.innerHTML = '';
+          document.getElementById('photo-count').textContent = `${photos.length} plików`;
+          document.getElementById('gallery-empty').style.display = photos.length ? 'none' : 'block';
 
-            try {
-                await addDoc(getSongsRef(), {
-                    title: title,
-                    author: author,
-                    createdAt: Date.now()
-                });
-                showToast("Piosenka dodana do playlisty!", "🎶");
-                document.getElementById('song-title').value = '';
-                document.getElementById('song-author').value = '';
-            } catch (err) {
-                console.error("Error adding song:", err);
-            }
-        };
-
-        // Admin Deletion
-        window.deletePhoto = async function(id) {
-            if (!currentUser) return;
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'photos', id));
-                showToast("Zdjęcie usunięte", "🗑️");
-            } catch (err) {
-                console.error("Delete photo error:", err);
-            }
-        };
-
-        // Camera / Snapshot System Handlers
-        window.openCameraModal = async function() {
-            const modal = document.getElementById('camera-modal');
-            const video = document.getElementById('webcam-video');
-            const canvas = document.getElementById('snapshot-canvas');
-            const errorBox = document.getElementById('camera-error');
+          photos.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
             
-            modal.classList.remove('hidden');
-            canvas.classList.add('hidden');
-            video.classList.remove('hidden');
-            errorBox.classList.add('hidden');
+            const mediaHtml = item.type === 'video' 
+              ? `<video src="${item.url}" controls></video>`
+              : `<img src="${item.url}" alt="${item.caption}">`;
 
-            document.getElementById('btn-snap-trigger').classList.remove('hidden');
-            document.getElementById('btn-snap-retake').classList.add('hidden');
-            document.getElementById('btn-snap-save').classList.add('hidden');
-            document.getElementById('snap-details').classList.add('hidden');
-
-            try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, 
-                    audio: false 
-                });
-                video.srcObject = mediaStream;
-            } catch (err) {
-                console.error("Camera access failed:", err);
-                errorBox.classList.remove('hidden');
-            }
-        };
-
-        window.closeCameraModal = function() {
-            const modal = document.getElementById('camera-modal');
-            modal.classList.add('hidden');
-
-            if (mediaStream) {
-                mediaStream.getTracks().forEach(track => track.stop());
-                mediaStream = null;
-            }
-        };
-
-        window.takeSnapshot = function() {
-            const video = document.getElementById('webcam-video');
-            const canvas = document.getElementById('snapshot-canvas');
-            
-            if (!video.videoWidth) return;
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            capturedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-
-            video.classList.add('hidden');
-            canvas.classList.remove('hidden');
-
-            document.getElementById('btn-snap-trigger').classList.add('hidden');
-            document.getElementById('btn-snap-retake').classList.remove('hidden');
-            document.getElementById('btn-snap-save').classList.remove('hidden');
-            document.getElementById('snap-details').classList.remove('hidden');
-        };
-
-        window.retakePhoto = function() {
-            const video = document.getElementById('webcam-video');
-            const canvas = document.getElementById('snapshot-canvas');
-
-            canvas.classList.add('hidden');
-            video.classList.remove('hidden');
-
-            document.getElementById('btn-snap-trigger').classList.remove('hidden');
-            document.getElementById('btn-snap-retake').classList.add('hidden');
-            document.getElementById('btn-snap-save').classList.add('hidden');
-            document.getElementById('snap-details').classList.add('hidden');
-            capturedDataUrl = null;
-        };
-
-        window.saveSnapshot = async function() {
-            if (!capturedDataUrl || !currentUser) return;
-
-            const author = document.getElementById('snap-author').value.trim() || 'Aparat Halloween';
-            const caption = document.getElementById('snap-caption').value.trim() || 'Zdjęcie z imprezy 🎃';
-
-            const saveBtn = document.getElementById('btn-snap-save');
-            saveBtn.disabled = true;
-            saveBtn.innerText = 'Zapisywanie...';
-
-            try {
-                await addDoc(getPhotosRef(), {
-                    imageUrl: capturedDataUrl,
-                    author: author,
-                    caption: caption,
-                    isCamera: true,
-                    createdAt: Date.now()
-                });
-
-                showToast("Zdjęcie z aparatu opublikowane!", "📸");
-                closeCameraModal();
-            } catch (err) {
-                console.error("Error saving camera snapshot:", err);
-                showToast("Błąd zapisu zdjęcia z aparatu", "⚠️");
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.innerText = '🚀 Wyślij do Galerii';
-            }
-        };
-
-        // Utility Helper Functions
-        function escapeHtml(str) {
-            return String(str).replace(/[&<>"']/g, function (m) {
-                return {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                }[m];
-            });
+            card.innerHTML = `
+              <div class="photo-card__media">${mediaHtml}</div>
+              <div class="photo-card__meta">
+                <strong>${item.caption}</strong>
+                <span>Autor: ${item.author} (${item.date})</span>
+              </div>
+              <div class="photo-card__actions">
+                <a href="${item.url}" download="halloween-photo.jpg" class="download-btn">⬇️ Pobierz plik</a>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
         }
 
-        function showToast(msg, icon = "✨") {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            document.getElementById('toast-icon').innerText = icon;
+        // MUZYKA (SPOTIFY & YOUTUBE ENBED)
+        const musicForm = document.getElementById('music-form');
 
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+        musicForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const title = document.getElementById('song-title').value.trim();
+          const link = document.getElementById('song-link').value.trim();
+          const author = document.getElementById('song-author').value.trim() || 'Gość';
+          const note = document.getElementById('song-note').value.trim();
+
+          songs.unshift({
+            id: 's_' + Date.now(),
+            title, link, author, note
+          });
+
+          saveData();
+          musicForm.reset();
+        });
+
+        function parseMusicEmbed(url) {
+          if (!url) return null;
+          // Spotify
+          const spotMatch = url.match(/spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+          if (spotMatch) {
+            return `https://open.spotify.com/embed/${spotMatch[1]}/${spotMatch[2]}`;
+          }
+          // YouTube
+          const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]{11})/);
+          if (ytMatch) {
+            return `https://www.youtube.com/embed/${ytMatch[1]}`;
+          }
+          return null;
         }
 
-        // Tab Navigation Switcher
-        window.switchTab = function(tabName) {
-            ['gallery', 'music', 'admin'].forEach(t => {
-                const sec = document.getElementById(`sec-${t}`);
-                const btn = document.getElementById(`tab-${t}`);
-                if (t === tabName) {
-                    sec.classList.remove('hidden');
-                    btn.className = "px-4 py-2 rounded-lg bg-spooky-orange text-white shadow-md transition-all flex items-center gap-2";
-                } else {
-                    sec.classList.add('hidden');
-                    btn.className = "px-4 py-2 rounded-lg text-purple-300 hover:text-white hover:bg-purple-900/30 transition-all flex items-center gap-2";
-                }
-            });
-        };
+        function renderSongs() {
+          const list = document.getElementById('song-list');
+          list.innerHTML = '';
+          document.getElementById('song-count').textContent = `${songs.length} propozycji`;
+          document.getElementById('songs-empty').style.display = songs.length ? 'none' : 'block';
 
-        // Halloween Countdown Timer Logic
-        function startCountdown() {
-            const targetDate = new Date('2026-10-31T18:00:00').getTime();
-
-            setInterval(() => {
-                const now = new Date().getTime();
-                const diff = targetDate - now;
-
-                if (diff <= 0) {
-                    document.getElementById('countdown-container').innerHTML = `<span class="text-spooky-orange font-bold text-xl">🎉 ZABAWY TRWAJĄ! 🎉</span>`;
-                    return;
-                }
-
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                document.getElementById('cd-days').innerText = String(days).padStart(2, '0');
-                document.getElementById('cd-hours').innerText = String(hours).padStart(2, '0');
-                document.getElementById('cd-mins').innerText = String(minutes).padStart(2, '0');
-                document.getElementById('cd-secs').innerText = String(seconds).padStart(2, '0');
-            }, 1000);
+          songs.forEach(s => {
+            const embedUrl = parseMusicEmbed(s.link);
+            const card = document.createElement('div');
+            card.className = 'song-card';
+            card.innerHTML = `
+              <div>
+                <h3 style="margin:0; font-size: 1.2rem; color:#fff;">🎵 ${s.title}</h3>
+                <p style="margin:0.25rem 0 0 0; color: var(--text-muted); font-size: 0.85rem;">Propozycja od: ${s.author} ${s.note ? '• ' + s.note : ''}</p>
+              </div>
+              ${embedUrl ? `<iframe src="${embedUrl}" allow="encrypted-media; autoplay"></iframe>` : ''}
+              ${s.link && !embedUrl ? `<a href="${s.link}" target="_blank" style="color: var(--orange); font-size: 0.85rem;">🔗 Otwórz link</a>` : ''}
+            `;
+            list.appendChild(card);
+          });
         }
 
-        startCountdown();
+        renderGallery();
+        renderSongs();
+      });
     </script>
-</body>
+  </body>
 </html>
