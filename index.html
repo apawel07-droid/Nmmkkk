@@ -81,15 +81,73 @@
       .hero__content h1 {
         font-size: 3.5rem;
         color: #fff;
-        margin: 0 0 1rem 0;
+        margin: 0 0 0.5rem 0;
         text-shadow: 0 0 20px var(--purple);
       }
 
       .hero__copy {
         color: var(--text-muted);
         max-width: 600px;
-        margin: 0 auto;
+        margin: 0 auto 1.5rem auto;
         font-size: 1.05rem;
+      }
+
+      /* COUNTDOWN STYLES */
+      .countdown {
+        background: rgba(9, 5, 20, 0.7);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        margin-top: 1rem;
+        border: 1px solid rgba(255, 102, 0, 0.3);
+        box-shadow: inset 0 0 15px rgba(255, 102, 0, 0.1);
+      }
+
+      .countdown__status {
+        color: var(--orange);
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+      }
+
+      .countdown__grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+        max-width: 450px;
+        margin: 0 auto 0.75rem auto;
+      }
+
+      .time-tile {
+        background: rgba(20, 12, 38, 0.9);
+        border: 1px solid var(--purple);
+        border-radius: 0.75rem;
+        padding: 0.6rem 0.4rem;
+        text-align: center;
+        box-shadow: inset 0 0 10px rgba(139, 92, 246, 0.2);
+      }
+
+      .time-tile strong {
+        display: block;
+        font-size: 1.8rem;
+        color: var(--orange);
+        font-family: 'Creepster', cursive;
+        line-height: 1;
+      }
+
+      .time-tile span {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .party-time {
+        color: var(--text-main);
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin: 0;
       }
 
       .tabs {
@@ -166,6 +224,7 @@
       @media(max-width: 640px) {
         .upload-options { grid-template-columns: 1fr; }
         .hero__content h1 { font-size: 2.5rem; }
+        .countdown__grid { grid-template-columns: repeat(2, 1fr); }
       }
 
       .action-card {
@@ -378,6 +437,30 @@
           <h1>Halloween Party</h1>
           <p class="hero__copy">Rób zdjęcia na żywo, oglądaj, przybliżaj i zgłaszaj nutki!</p>
         </div>
+
+        <!-- LICZNIK ODLICZAJĄCY DO IMPREZY -->
+        <section class="countdown">
+          <div class="countdown__status" id="countdown-status">🎃 Zaczynamy Imprezę za:</div>
+          <div class="countdown__grid">
+            <div class="time-tile">
+              <strong id="days">00</strong>
+              <span>dni</span>
+            </div>
+            <div class="time-tile">
+              <strong id="hours">00</strong>
+              <span>godz</span>
+            </div>
+            <div class="time-tile">
+              <strong id="minutes">00</strong>
+              <span>min</span>
+            </div>
+            <div class="time-tile">
+              <strong id="seconds">00</strong>
+              <span>sek</span>
+            </div>
+          </div>
+          <p class="party-time">📅 24 Października 2026, godz. 19:30</p>
+        </section>
       </section>
 
       <nav class="tabs">
@@ -496,7 +579,7 @@
     </dialog>
 
     <script>
-      // Konfiguracja Firebase dla udostępniania w czasie rzeczywistym
+      // Konfiguracja Firebase
       const firebaseConfig = {
         apiKey: "AIzaSyDemoKeyHalloweenParty2026",
         authDomain: "halloween-party-2026.firebaseapp.com",
@@ -510,7 +593,41 @@
       const db = firebase.firestore();
 
       document.addEventListener('DOMContentLoaded', () => {
-        // Taby
+        // --- LICZNIK ODLICZAJĄCY ---
+        const partyDate = new Date('2026-10-24T19:30:00');
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        const countdownStatus = document.getElementById('countdown-status');
+
+        function updateCountdown() {
+          const now = new Date();
+          const diff = partyDate - now;
+
+          if (diff <= 0) {
+            countdownStatus.textContent = '🎉 Impreza trwa!';
+            daysEl.textContent = '00';
+            hoursEl.textContent = '00';
+            minutesEl.textContent = '00';
+            secondsEl.textContent = '00';
+            return;
+          }
+
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+          const minutes = Math.floor((diff / 1000 / 60) % 60);
+          const seconds = Math.floor((diff / 1000) % 60);
+
+          daysEl.textContent = String(days).padStart(2, '0');
+          hoursEl.textContent = String(hours).padStart(2, '0');
+          minutesEl.textContent = String(minutes).padStart(2, '0');
+          secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // TABY
         const tabs = document.querySelectorAll('.tab');
         const panels = document.querySelectorAll('.panel');
 
@@ -594,7 +711,6 @@
           const author = document.getElementById('cam-author').value.trim() || 'Gość';
           const caption = document.getElementById('cam-caption').value.trim() || 'Zdjęcie z aparatu';
 
-          // Zapis do chmury dla wszystkich
           await db.collection('photos').add({
             url: capturedDataUrl,
             type: 'image',
@@ -657,7 +773,7 @@
         lightboxClose.addEventListener('click', () => lightbox.close());
         lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.close(); });
 
-        // ODBIERANIE ZDJĘĆ W CZASIE RZECZYWISTYM DLA WSZYSTKICH
+        // NASŁUCH DANYCH Z BAZY REALTIME
         db.collection('photos').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
           const grid = document.getElementById('gallery-grid');
           grid.innerHTML = '';
