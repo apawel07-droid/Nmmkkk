@@ -11,6 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Firebase App & Firestore (Baza danych w czasie rzeczywistym) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
       :root {
         --bg-dark: #090514;
@@ -297,7 +301,7 @@
       }
       .photo-card:hover { transform: translateY(-4px); border-color: var(--orange); }
 
-      .photo-card__media { height: 200px; background: #000; }
+      .photo-card__media { height: 200px; background: #000; cursor: zoom-in; }
       .photo-card__media img, .photo-card__media video { width: 100%; height: 100%; object-fit: cover; }
       .photo-card__meta { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
       .photo-card__meta strong { color: #fff; font-size: 1rem; }
@@ -314,6 +318,40 @@
         font-size: 0.9rem;
       }
       .download-btn:hover { text-decoration: underline; }
+
+      /* LIGHTBOX / PODGLĄD ZDJĘCIA */
+      .lightbox {
+        position: fixed;
+        inset: 0;
+        background: rgba(9, 5, 20, 0.95);
+        z-index: 200;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        border: none;
+        width: 100vw;
+        height: 100vh;
+      }
+      .lightbox:not([open]) { display: none; }
+      .lightbox img {
+        max-width: 90vw;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 1rem;
+        box-shadow: 0 0 30px rgba(0,0,0,0.9);
+      }
+      .lightbox__close {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 2.5rem;
+        cursor: pointer;
+      }
 
       .song-list { display: flex; flex-direction: column; gap: 1rem; }
       .song-card {
@@ -338,7 +376,7 @@
         <div class="hero__content">
           <p class="eyebrow">Galeria Imprezowa</p>
           <h1>Halloween Party</h1>
-          <p class="hero__copy">Rób zdjęcia na żywo, dodawaj z galerii i zgłaszaj nutki!</p>
+          <p class="hero__copy">Rób zdjęcia na żywo, oglądaj, przybliżaj i zgłaszaj nutki!</p>
         </div>
       </section>
 
@@ -351,7 +389,7 @@
       <section class="panel is-active" id="gallery-panel">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Wspólna Galeria</p>
+            <p class="eyebrow">Wspólna Galeria Na Żywo</p>
             <h2>Zdjęcia z Imprezy</h2>
           </div>
           <p id="photo-count">0 plików</p>
@@ -381,7 +419,7 @@
               <input id="photo-caption" type="text" placeholder="np. Walimy wódkę!" />
             </label>
           </div>
-          <button class="primary-action" type="submit" id="submit-btn">🚀 Opublikuj Pliki z Urządzenia</button>
+          <button class="primary-action" type="submit" id="submit-btn">🚀 Opublikuj Pliki dla Wszystkich</button>
         </form>
 
         <div class="gallery-grid" id="gallery-grid"></div>
@@ -450,7 +488,27 @@
       </div>
     </dialog>
 
+    <!-- LIGHTBOX / OKNO PRZYBLIŻANIA ZDJĘCIA -->
+    <dialog class="lightbox" id="lightbox">
+      <button class="lightbox__close" id="lightbox-close" type="button">&times;</button>
+      <img id="lightbox-image" alt="Powiększenie" />
+      <p id="lightbox-caption" style="color: #fff; margin-top: 1rem; font-size: 1.1rem; text-align: center;"></p>
+    </dialog>
+
     <script>
+      // Konfiguracja Firebase dla udostępniania w czasie rzeczywistym
+      const firebaseConfig = {
+        apiKey: "AIzaSyDemoKeyHalloweenParty2026",
+        authDomain: "halloween-party-2026.firebaseapp.com",
+        projectId: "halloween-party-2026",
+        storageBucket: "halloween-party-2026.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "1:123456789:web:abcdef"
+      };
+
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
       document.addEventListener('DOMContentLoaded', () => {
         // Taby
         const tabs = document.querySelectorAll('.tab');
@@ -465,21 +523,6 @@
             document.getElementById(`${target}-panel`).classList.add('is-active');
           });
         });
-
-        // Stan danych (Pamięć lokalna dla stabilności)
-        let photos = JSON.parse(localStorage.getItem('hw_photos')) || [];
-        let songs = JSON.parse(localStorage.getItem('hw_songs')) || [];
-
-        function saveData() {
-          try {
-            localStorage.setItem('hw_photos', JSON.stringify(photos));
-            localStorage.setItem('hw_songs', JSON.stringify(songs));
-          } catch(e) {
-            console.warn('Przekroczono limit pamięci przeglądarki');
-          }
-          renderGallery();
-          renderSongs();
-        }
 
         // APARAT NA ŻYWO
         const cameraModal = document.getElementById('camera-modal');
@@ -545,32 +588,32 @@
           saveSnapBtn.style.display = 'none';
         });
 
-        saveSnapBtn.addEventListener('click', () => {
+        saveSnapBtn.addEventListener('click', async () => {
           if (!capturedDataUrl) return;
 
           const author = document.getElementById('cam-author').value.trim() || 'Gość';
           const caption = document.getElementById('cam-caption').value.trim() || 'Zdjęcie z aparatu';
 
-          photos.unshift({
-            id: 'p_' + Date.now(),
+          // Zapis do chmury dla wszystkich
+          await db.collection('photos').add({
             url: capturedDataUrl,
+            type: 'image',
             author,
             caption,
-            date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
-          saveData();
           document.getElementById('cam-author').value = '';
           document.getElementById('cam-caption').value = '';
           capturedDataUrl = null;
           closeCamera();
         });
 
-        // WYSYŁANIE Z URZĄDZENIA
+        // WYSYŁANIE PLIKÓW Z URZĄDZENIA
         const photoForm = document.getElementById('photo-form');
         const photoInput = document.getElementById('photo-input');
 
-        photoForm.addEventListener('submit', (e) => {
+        photoForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const author = document.getElementById('photo-author').value.trim() || 'Gość';
           const caption = document.getElementById('photo-caption').value.trim() || 'Zdjęcie';
@@ -581,95 +624,110 @@
             return;
           }
 
-          Array.from(files).forEach(file => {
+          for (let file of files) {
             const reader = new FileReader();
-            reader.onload = (ev) => {
-              photos.unshift({
-                id: 'p_' + Date.now() + Math.random().toString(36).substr(2, 4),
+            reader.onload = async (ev) => {
+              await db.collection('photos').add({
                 url: ev.target.result,
                 type: file.type.startsWith('video') ? 'video' : 'image',
                 author,
                 caption,
-                date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
               });
-              saveData();
             };
             reader.readAsDataURL(file);
-          });
+          }
 
           photoInput.value = '';
           photoForm.reset();
         });
 
-        function renderGallery() {
+        // PRZYBLIŻANIE / LIGHTBOX
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightbox-image');
+        const lightboxCaption = document.getElementById('lightbox-caption');
+        const lightboxClose = document.getElementById('lightbox-close');
+
+        function openLightbox(url, caption) {
+          lightboxImage.src = url;
+          lightboxCaption.textContent = caption;
+          lightbox.showModal();
+        }
+
+        lightboxClose.addEventListener('click', () => lightbox.close());
+        lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.close(); });
+
+        // ODBIERANIE ZDJĘĆ W CZASIE RZECZYWISTYM DLA WSZYSTKICH
+        db.collection('photos').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
           const grid = document.getElementById('gallery-grid');
           grid.innerHTML = '';
-          document.getElementById('photo-count').textContent = `${photos.length} plików`;
-          document.getElementById('gallery-empty').style.display = photos.length ? 'none' : 'block';
+          document.getElementById('photo-count').textContent = `${snapshot.docs.length} plików`;
+          document.getElementById('gallery-empty').style.display = snapshot.docs.length ? 'none' : 'block';
 
-          photos.forEach(item => {
+          snapshot.docs.forEach(doc => {
+            const data = doc.data();
             const card = document.createElement('div');
             card.className = 'photo-card';
             
-            const mediaHtml = item.type === 'video' 
-              ? `<video src="${item.url}" controls></video>`
-              : `<img src="${item.url}" alt="${item.caption}">`;
+            const mediaContainer = document.createElement('div');
+            mediaContainer.className = 'photo-card__media';
 
-            card.innerHTML = `
-              <div class="photo-card__media">${mediaHtml}</div>
+            if (data.type === 'video') {
+              mediaContainer.innerHTML = `<video src="${data.url}" controls></video>`;
+            } else {
+              mediaContainer.innerHTML = `<img src="${data.url}" alt="${data.caption}">`;
+              mediaContainer.addEventListener('click', () => openLightbox(data.url, `${data.caption} — Autor: ${data.author}`));
+            }
+
+            card.appendChild(mediaContainer);
+            card.innerHTML += `
               <div class="photo-card__meta">
-                <strong>${item.caption}</strong>
-                <span>Autor: ${item.author} (${item.date})</span>
+                <strong>${data.caption}</strong>
+                <span>Autor: ${data.author}</span>
               </div>
               <div class="photo-card__actions">
-                <a href="${item.url}" download="halloween-photo.jpg" class="download-btn">⬇️ Pobierz plik</a>
+                <a href="${data.url}" download="halloween-photo.jpg" class="download-btn">⬇️ Pobierz plik</a>
               </div>
             `;
             grid.appendChild(card);
           });
-        }
+        });
 
-        // MUZYKA (SPOTIFY & YOUTUBE ENBED)
+        // MUZYKA (SPOTIFY & YOUTUBE)
         const musicForm = document.getElementById('music-form');
 
-        musicForm.addEventListener('submit', (e) => {
+        musicForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const title = document.getElementById('song-title').value.trim();
           const link = document.getElementById('song-link').value.trim();
           const author = document.getElementById('song-author').value.trim() || 'Gość';
           const note = document.getElementById('song-note').value.trim();
 
-          songs.unshift({
-            id: 's_' + Date.now(),
-            title, link, author, note
+          await db.collection('songs').add({
+            title, link, author, note,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
-          saveData();
           musicForm.reset();
         });
 
         function parseMusicEmbed(url) {
           if (!url) return null;
-          // Spotify
           const spotMatch = url.match(/spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
-          if (spotMatch) {
-            return `https://open.spotify.com/embed/${spotMatch[1]}/${spotMatch[2]}`;
-          }
-          // YouTube
+          if (spotMatch) return `https://open.spotify.com/embed/${spotMatch[1]}/${spotMatch[2]}`;
           const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]{11})/);
-          if (ytMatch) {
-            return `https://www.youtube.com/embed/${ytMatch[1]}`;
-          }
+          if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
           return null;
         }
 
-        function renderSongs() {
+        db.collection('songs').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
           const list = document.getElementById('song-list');
           list.innerHTML = '';
-          document.getElementById('song-count').textContent = `${songs.length} propozycji`;
-          document.getElementById('songs-empty').style.display = songs.length ? 'none' : 'block';
+          document.getElementById('song-count').textContent = `${snapshot.docs.length} propozycji`;
+          document.getElementById('songs-empty').style.display = snapshot.docs.length ? 'none' : 'block';
 
-          songs.forEach(s => {
+          snapshot.docs.forEach(doc => {
+            const s = doc.data();
             const embedUrl = parseMusicEmbed(s.link);
             const card = document.createElement('div');
             card.className = 'song-card';
@@ -683,10 +741,7 @@
             `;
             list.appendChild(card);
           });
-        }
-
-        renderGallery();
-        renderSongs();
+        });
       });
     </script>
   </body>
