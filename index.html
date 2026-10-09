@@ -749,13 +749,11 @@
           }
 
           for (let file of files) {
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-              let resultUrl = ev.target.result;
-              
-              if (file.type.startsWith('image')) {
+            if (file.type.startsWith('image')) {
+              const reader = new FileReader();
+              reader.onload = async (ev) => {
                 const img = new Image();
-                img.src = resultUrl;
+                img.src = ev.target.result;
                 await new Promise((resolve) => { img.onload = resolve; });
                 const canvas = document.createElement('canvas');
                 let width = img.width;
@@ -767,29 +765,102 @@
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                resultUrl = canvas.toDataURL('image/jpeg', 0.8);
-              } else if (file.type.startsWith('video')) {
-                // Sprawdzanie wielkości pliku wideo (limit bazy danych to ok. 900KB - 1MB na rekord)
-                if (file.size > 900000) {
-                  alert(`⚠️ Film "${file.name}" jest za duży (${(file.size / 1024 / 1024).toFixed(1)}MB). Baza danych przyjmuje filmy do 0.9 MB. Wrzuć krótszy filmik lub wrzuć go na YouTube/Google Drive i wklej jako link!`);
+                const resultUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+                await db.collection('photos').add({
+                  url: resultUrl,
+                  type: 'image',
+                  author,
+                  caption,
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+              };
+              reader.readAsDataURL(file);
+            } else if (file.type.startsWith('video')) {
+              // Automatyczna kompresja i zmniejszenie rozdzielczości filmu przez Canvas w przeglądarce
+              const video = document.createElement('video');
+              video.preload = 'metadata';
+              video.src = URL.createObjectURL(file);
+              video.muted = true;
+              video.playsInline = true;
+
+              await new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                  video.play();
+                  resolve();
+                };
+              });
+
+              const canvas = document.createElement('canvas');
+              const MAX_V_WIDTH = 480; // zmniejszenie rozdzielczości, żeby plik zmieścił się w bazie
+              const scale = MAX_V_WIDTH / video.videoWidth;
+              canvas.width = MAX_V_WIDTH;
+              canvas.height = Math.floor(video.videoHeight * (scale > 0 && scale < 1 ? scale : 1));
+
+              const ctx = canvas.getContext('2d');
+              const stream = canvas.captureStream(25); // 25 klatek na sekundę
+              let recorder;
+              try {
+                recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8' });
+              } catch (err) {
+                try {
+                  recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                } catch (e) {
+                  alert('Twoja przeglądarka nie wspiera kompresji tego filmu. Spróbuj wrzucić krótszy filmik.');
                   return;
                 }
               }
 
-              await db.collection('photos').add({
-                url: resultUrl,
-                type: file.type.startsWith('video') ? 'video' : 'image',
-                author,
-                caption,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              const chunks = [];
+              recorder.ondataavailable = (e) => chunks.push(e.data);
+              
+              const compressDone = new Promise((resolve) => {
+                recorder.onstop = async () => {
+                  const blob = new Blob(chunks, { type: 'video/webm' });
+                  const reader = new FileReader();
+                  reader.onload = async (ev) => {
+                    await db.collection('photos').add({
+                      url: ev.target.result,
+                      type: 'video',
+                      author,
+                      caption,
+                      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    resolve();
+                  };
+                  reader.readAsDataURL(blob);
+                };
               });
-            };
-            reader.readAsDataURL(file);
+
+              recorder.start();
+              video.currentTime = 0;
+              
+              const drawInterval = setInterval(() => {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                if (video.ended || video.paused) {
+                  clearInterval(drawInterval);
+                  recorder.stop();
+                  video.remove();
+                }
+              }, 40);
+
+              video.ontimeupdate = () => {
+                if (video.currentTime >= video.duration || video.currentTime > 10) { // maks 10 sekund filmu dla bezpieczeństwa bazy
+                  video.pause();
+                  clearInterval(drawInterval);
+                  if (recorder.state === 'recording') recorder.stop();
+                  video.remove();
+                }
+              };
+
+              await compressDone;
+            }
           }
 
           photoInput.value = '';
           filePreviewBox.hidden = true;
           photoForm.reset();
+          alert('Pliki zostały pomyślnie skompresowane i wysłane dla wszystkich!');
         });
 
         // APARAT NA ŻYWO
