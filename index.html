@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Firebase App & Firestore (Baza danych w czasie rzeczywistym) -->
+    <!-- Firebase App & Firestore -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -92,7 +92,6 @@
         font-size: 1.05rem;
       }
 
-      /* COUNTDOWN STYLES */
       .countdown {
         background: rgba(9, 5, 20, 0.7);
         border-radius: 1rem;
@@ -267,6 +266,13 @@
       }
       input:focus { border-color: var(--orange); box-shadow: 0 0 10px var(--orange-glow); }
 
+      .file-status {
+        color: var(--orange);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+      }
+
       .primary-action {
         background: linear-gradient(135deg, var(--orange), #ea580c);
         color: white;
@@ -424,6 +430,28 @@
       }
       .song-card iframe { width: 100%; height: 152px; border-radius: 0.75rem; border: none; }
 
+      /* ADMIN STYLES */
+      .admin-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(9, 5, 20, 0.6);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+      .btn-delete {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.5rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-delete:hover { background: rgba(239, 68, 68, 0.4); }
+
       .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
     </style>
   </head>
@@ -438,7 +466,6 @@
           <p class="hero__copy">Rób zdjęcia na żywo, oglądaj, przybliżaj i zgłaszaj nutki!</p>
         </div>
 
-        <!-- LICZNIK ODLICZAJĄCY DO IMPREZY -->
         <section class="countdown">
           <div class="countdown__status" id="countdown-status">🎃 Zaczynamy Imprezę za:</div>
           <div class="countdown__grid">
@@ -466,6 +493,7 @@
       <nav class="tabs">
         <button class="tab is-active" type="button" data-tab="gallery">📸 Zdjęcia i Filmy</button>
         <button class="tab" type="button" data-tab="music">🎵 Muzyka</button>
+        <button class="tab" type="button" data-tab="admin">🔐 Admin</button>
       </nav>
 
       <!-- GALERIA -->
@@ -483,7 +511,7 @@
             <input id="photo-input" type="file" accept="image/*,video/*" multiple />
             <span class="action-card__icon">📁</span>
             <span class="action-card__title">Wybierz z Urządzenia</span>
-            <span class="action-card__hint">Dodaj pliki z telefonu lub komputera</span>
+            <span class="action-card__hint">Dodaj zdjęcia lub filmy z telefonu</span>
           </label>
 
           <div class="action-card" id="open-camera-btn">
@@ -492,6 +520,8 @@
             <span class="action-card__hint">Użyj kamerki i zrób fotkę teraz</span>
           </div>
         </div>
+
+        <div id="file-status" class="file-status" hidden>Wybierz pliki i kliknij poniżej</div>
 
         <form id="photo-form">
           <div class="form-row">
@@ -541,6 +571,28 @@
 
         <div class="song-list" id="song-list"></div>
         <div class="empty-state" id="songs-empty">Brak propozycji piosenek. Dodaj pierwszą!</div>
+      </section>
+
+      <!-- PANEL ADMINA -->
+      <section class="panel" id="admin-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Zarządzanie Stroną</p>
+            <h2>Panel Administratora</h2>
+          </div>
+        </div>
+
+        <form id="admin-login-form">
+          <label>Wpisz Hasło Administratora:
+            <input id="admin-password" type="password" placeholder="Hasło..." required />
+          </label>
+          <button class="primary-action" type="submit">Zaloguj się</button>
+        </form>
+
+        <div id="admin-content" hidden>
+          <h3 style="color:#fff; font-size: 1.3rem; margin-bottom: 1rem;">Zarządzaj Plikami w Galerii</h3>
+          <div id="admin-media-list"></div>
+        </div>
       </section>
     </main>
 
@@ -641,6 +693,51 @@
           });
         });
 
+        // WYBIERANIE PLIKÓW
+        const photoInput = document.getElementById('photo-input');
+        const fileStatus = document.getElementById('file-status');
+
+        photoInput.addEventListener('change', () => {
+          if (photoInput.files.length > 0) {
+            fileStatus.hidden = false;
+            fileStatus.textContent = `Wybrano ${photoInput.files.length} plik(ów). Wpisz nick i kliknij "Opublikuj"!`;
+          } else {
+            fileStatus.hidden = true;
+          }
+        });
+
+        // WYSYŁANIE PLIKÓW Z URZĄDZENIA
+        const photoForm = document.getElementById('photo-form');
+        photoForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const author = document.getElementById('photo-author').value.trim() || 'Gość';
+          const caption = document.getElementById('photo-caption').value.trim() || 'Zdjęcie';
+          const files = photoInput.files;
+
+          if (files.length === 0) {
+            alert('Wybierz najpierw zdjęcie lub film z telefonu/komputera!');
+            return;
+          }
+
+          for (let file of files) {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+              await db.collection('photos').add({
+                url: ev.target.result,
+                type: file.type.startsWith('video') ? 'video' : 'image',
+                author,
+                caption,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            };
+            reader.readAsDataURL(file);
+          }
+
+          photoInput.value = '';
+          fileStatus.hidden = true;
+          photoForm.reset();
+        });
+
         // APARAT NA ŻYWO
         const cameraModal = document.getElementById('camera-modal');
         const openCameraBtn = document.getElementById('open-camera-btn');
@@ -725,39 +822,6 @@
           closeCamera();
         });
 
-        // WYSYŁANIE PLIKÓW Z URZĄDZENIA
-        const photoForm = document.getElementById('photo-form');
-        const photoInput = document.getElementById('photo-input');
-
-        photoForm.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const author = document.getElementById('photo-author').value.trim() || 'Gość';
-          const caption = document.getElementById('photo-caption').value.trim() || 'Zdjęcie';
-          const files = photoInput.files;
-
-          if (files.length === 0) {
-            alert('Wybierz plik z urządzenia!');
-            return;
-          }
-
-          for (let file of files) {
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-              await db.collection('photos').add({
-                url: ev.target.result,
-                type: file.type.startsWith('video') ? 'video' : 'image',
-                author,
-                caption,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-              });
-            };
-            reader.readAsDataURL(file);
-          }
-
-          photoInput.value = '';
-          photoForm.reset();
-        });
-
         // PRZYBLIŻANIE / LIGHTBOX
         const lightbox = document.getElementById('lightbox');
         const lightboxImage = document.getElementById('lightbox-image');
@@ -773,15 +837,21 @@
         lightboxClose.addEventListener('click', () => lightbox.close());
         lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.close(); });
 
-        // NASŁUCH DANYCH Z BAZY REALTIME
+        // ODBIERANIE ZDJĘĆ REALTIME
         db.collection('photos').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
           const grid = document.getElementById('gallery-grid');
+          const adminList = document.getElementById('admin-media-list');
           grid.innerHTML = '';
+          adminList.innerHTML = '';
+
           document.getElementById('photo-count').textContent = `${snapshot.docs.length} plików`;
           document.getElementById('gallery-empty').style.display = snapshot.docs.length ? 'none' : 'block';
 
           snapshot.docs.forEach(doc => {
             const data = doc.data();
+            const id = doc.id;
+
+            // Galeria użytkownika
             const card = document.createElement('div');
             card.className = 'photo-card';
             
@@ -802,16 +872,27 @@
                 <span>Autor: ${data.author}</span>
               </div>
               <div class="photo-card__actions">
-                <a href="${data.url}" download="halloween-photo.jpg" class="download-btn">⬇️ Pobierz plik</a>
+                <a href="${data.url}" download="halloween-file" class="download-btn">⬇️ Pobierz plik</a>
               </div>
             `;
             grid.appendChild(card);
+
+            // Panel Admina
+            const adminItem = document.createElement('div');
+            adminItem.className = 'admin-item';
+            adminItem.innerHTML = `
+              <div>
+                <strong style="color:#fff;">${data.caption}</strong>
+                <span style="color: var(--text-muted); font-size:0.85rem; display:block;">Autor: ${data.author}</span>
+              </div>
+              <button class="btn-delete" onclick="deletePhoto('${id}')">Usuń</button>
+            `;
+            adminList.appendChild(adminItem);
           });
         });
 
-        // MUZYKA (SPOTIFY & YOUTUBE)
+        // MUZYKA
         const musicForm = document.getElementById('music-form');
-
         musicForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const title = document.getElementById('song-title').value.trim();
@@ -858,7 +939,29 @@
             list.appendChild(card);
           });
         });
+
+        // LOGOWANIE ADMINA
+        const adminLoginForm = document.getElementById('admin-login-form');
+        const adminContent = document.getElementById('admin-content');
+
+        adminLoginForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const pwd = document.getElementById('admin-password').value;
+          if (pwd === '1234567') {
+            adminLoginForm.hidden = true;
+            adminContent.hidden = false;
+          } else {
+            alert('Błędne hasło administratora!');
+          }
+        });
       });
+
+      // FUNKCJA USUWANIA DLA ADMINA
+      async function deletePhoto(id) {
+        if (confirm('Czy na pewno chcesz usunąć to zdjęcie/film ze bazy?')) {
+          await firebase.firestore().collection('photos').doc(id).delete();
+        }
+      }
     </script>
   </body>
 </html>
