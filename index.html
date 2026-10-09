@@ -383,7 +383,7 @@
         font-family: monospace;
       }
 
-      .photo-card__media { height: 200px; background: #000; cursor: zoom-in; }
+      .photo-card__media { height: 200px; background: #000; position: relative; }
       .photo-card__media img, .photo-card__media video { width: 100%; height: 100%; object-fit: cover; }
       .photo-card__meta { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
       .photo-card__meta strong { color: #fff; font-size: 1rem; }
@@ -490,7 +490,7 @@
         <div class="hero__content">
           <p class="eyebrow">Galeria Imprezowa</p>
           <h1>Halloween Party</h1>
-          <p class="hero__copy">Rób zdjęcia na żywo, oglądaj, przybliżaj i zgłaszaj nutki!</p>
+          <p class="hero__copy">Rób zdjęcia i filmy na żywo, oglądaj, przybliżaj i zgłaszaj nutki!</p>
         </div>
 
         <section class="countdown">
@@ -528,7 +528,7 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Wspólna Galeria Na Żywo</p>
-            <h2>Zdjęcia z Imprezy</h2>
+            <h2>Zdjęcia i Filmy z Imprezy</h2>
           </div>
           <p id="photo-count">0 plików</p>
         </div>
@@ -565,7 +565,7 @@
         </form>
 
         <div class="gallery-grid" id="gallery-grid"></div>
-        <div class="empty-state" id="gallery-empty">Czekamy na pierwsze zdjęcia!</div>
+        <div class="empty-state" id="gallery-empty">Czekamy na pierwsze zdjęcia i filmy!</div>
       </section>
 
       <!-- MUZYKA -->
@@ -740,7 +740,7 @@
         photoForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const author = document.getElementById('photo-author').value.trim() || 'Gość';
-          const caption = document.getElementById('photo-caption').value.trim() || 'Zdjęcie';
+          const caption = document.getElementById('photo-caption').value.trim() || 'Wspomnienie';
           const files = photoInput.files;
 
           if (files.length === 0) {
@@ -784,7 +784,7 @@
           photoInput.value = '';
           filePreviewBox.hidden = true;
           photoForm.reset();
-          alert('Pliki zostały wysłane do wspólnej galerii!');
+          alert('Pliki zostały wysłane do wspólnej galerii dla wszystkich!');
         });
 
         // APARAT NA ŻYWO
@@ -886,7 +886,7 @@
         lightboxClose.addEventListener('click', () => lightbox.close());
         lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.close(); });
 
-        // ODBIERANIE ZDJĘĆ REALTIME Z NUMERACJĄ
+        // ODBIERANIE PLIKÓW REALTIME (ZDJĘCIA I FILMY)
         db.collection('photos').orderBy('createdAt', 'asc').onSnapshot(snapshot => {
           const grid = document.getElementById('gallery-grid');
           const adminList = document.getElementById('admin-media-list');
@@ -909,7 +909,7 @@
             mediaContainer.className = 'photo-card__media';
 
             if (data.type === 'video') {
-              mediaContainer.innerHTML = `<span class="serial-badge">${serialNum}</span><video src="${data.url}" controls></video>`;
+              mediaContainer.innerHTML = `<span class="serial-badge">${serialNum}</span><video src="${data.url}" controls playsinline preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>`;
             } else {
               mediaContainer.innerHTML = `<span class="serial-badge">${serialNum}</span><img src="${data.url}" alt="${data.caption}">`;
               mediaContainer.addEventListener('click', () => openLightbox(data.url, `${serialNum} - ${data.caption} — Autor: ${data.author}`));
