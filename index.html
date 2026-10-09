@@ -266,11 +266,12 @@
       }
       input:focus { border-color: var(--orange); box-shadow: 0 0 10px var(--orange-glow); }
 
-      .file-status {
-        color: var(--orange);
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-align: center;
+      .file-preview-box {
+        background: rgba(9, 5, 20, 0.6);
+        border: 1px solid var(--purple);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
       }
 
       .primary-action {
@@ -521,7 +522,9 @@
           </div>
         </div>
 
-        <div id="file-status" class="file-status" hidden>Wybierz pliki i kliknij poniżej</div>
+        <div id="file-preview-box" class="file-preview-box" hidden>
+          <strong id="file-preview-text" style="color: var(--orange);">Wybrano pliki</strong>
+        </div>
 
         <form id="photo-form">
           <div class="form-row">
@@ -693,20 +696,20 @@
           });
         });
 
-        // WYBIERANIE PLIKÓW
+        // WYBIERANIE PLIKÓW Z URZĄDZENIA
         const photoInput = document.getElementById('photo-input');
-        const fileStatus = document.getElementById('file-status');
+        const filePreviewBox = document.getElementById('file-preview-box');
+        const filePreviewText = document.getElementById('file-preview-text');
 
         photoInput.addEventListener('change', () => {
           if (photoInput.files.length > 0) {
-            fileStatus.hidden = false;
-            fileStatus.textContent = `Wybrano ${photoInput.files.length} plik(ów). Wpisz nick i kliknij "Opublikuj"!`;
+            filePreviewBox.hidden = false;
+            filePreviewText.textContent = `✅ Wybrano ${photoInput.files.length} plik(ów). Wpisz nick i kliknij "Opublikuj"!`;
           } else {
-            fileStatus.hidden = true;
+            filePreviewBox.hidden = true;
           }
         });
 
-        // WYSYŁANIE PLIKÓW Z URZĄDZENIA
         const photoForm = document.getElementById('photo-form');
         photoForm.addEventListener('submit', async (e) => {
           e.preventDefault();
@@ -715,15 +718,35 @@
           const files = photoInput.files;
 
           if (files.length === 0) {
-            alert('Wybierz najpierw zdjęcie lub film z telefonu/komputera!');
+            alert('Wybierz najpierw plik z telefonu!');
             return;
           }
 
           for (let file of files) {
             const reader = new FileReader();
             reader.onload = async (ev) => {
+              let resultUrl = ev.target.result;
+              
+              // Kompresja obrazu, aby uniknąć błędów rozmiaru w bazie
+              if (file.type.startsWith('image')) {
+                const img = new Image();
+                img.src = resultUrl;
+                await new Promise((resolve) => { img.onload = resolve; });
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const MAX = 1200;
+                if (width > height && width > MAX) { height *= MAX / width; width = MAX; }
+                else if (height > MAX) { width *= MAX / height; height = MAX; }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resultUrl = canvas.toDataURL('image/jpeg', 0.8);
+              }
+
               await db.collection('photos').add({
-                url: ev.target.result,
+                url: resultUrl,
                 type: file.type.startsWith('video') ? 'video' : 'image',
                 author,
                 caption,
@@ -734,8 +757,9 @@
           }
 
           photoInput.value = '';
-          fileStatus.hidden = true;
+          filePreviewBox.hidden = true;
           photoForm.reset();
+          alert('Pliki zostały wysłane do wspólnej galerii!');
         });
 
         // APARAT NA ŻYWO
@@ -851,7 +875,6 @@
             const data = doc.data();
             const id = doc.id;
 
-            // Galeria użytkownika
             const card = document.createElement('div');
             card.className = 'photo-card';
             
@@ -877,7 +900,6 @@
             `;
             grid.appendChild(card);
 
-            // Panel Admina
             const adminItem = document.createElement('div');
             adminItem.className = 'admin-item';
             adminItem.innerHTML = `
@@ -956,9 +978,8 @@
         });
       });
 
-      // FUNKCJA USUWANIA DLA ADMINA
       async function deletePhoto(id) {
-        if (confirm('Czy na pewno chcesz usunąć to zdjęcie/film ze bazy?')) {
+        if (confirm('Czy na pewno chcesz usunąć ten plik?')) {
           await firebase.firestore().collection('photos').doc(id).delete();
         }
       }
