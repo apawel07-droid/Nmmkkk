@@ -768,6 +768,12 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 resultUrl = canvas.toDataURL('image/jpeg', 0.8);
+              } else if (file.type.startsWith('video')) {
+                // Sprawdzanie wielkości pliku wideo (limit bazy danych to ok. 900KB - 1MB na rekord)
+                if (file.size > 900000) {
+                  alert(`⚠️ Film "${file.name}" jest za duży (${(file.size / 1024 / 1024).toFixed(1)}MB). Baza danych przyjmuje filmy do 0.9 MB. Wrzuć krótszy filmik lub wrzuć go na YouTube/Google Drive i wklej jako link!`);
+                  return;
+                }
               }
 
               await db.collection('photos').add({
@@ -784,7 +790,6 @@
           photoInput.value = '';
           filePreviewBox.hidden = true;
           photoForm.reset();
-          alert('Pliki zostały wysłane do wspólnej galerii dla wszystkich!');
         });
 
         // APARAT NA ŻYWO
